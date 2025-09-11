@@ -676,6 +676,40 @@ export class GdmLiveAudio extends LitElement {
       font-size: 14px;
       color: white;
     }
+
+    /* Mobile Layout Adjustments */
+    @media (max-width: 768px) {
+      .controls {
+        bottom: 15vh;
+      }
+
+      .controls button {
+        width: 65px;
+        height: 65px;
+      }
+
+      .screen-share-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 11;
+      }
+
+      .tools-container {
+        position: fixed;
+        bottom: 75px; /* 20px (bottom) + 45px (height) + 10px (gap) */
+        right: 20px;
+        z-index: 11;
+      }
+
+      .share-options {
+        /* Reposition the dropdown to open upwards from the bottom-right button */
+        top: auto;
+        bottom: 55px; /* 45px button height + 10px gap */
+        left: auto;
+        right: 0;
+      }
+    }
   `;
 
   constructor() {
@@ -783,9 +817,9 @@ export class GdmLiveAudio extends LitElement {
         result = {error: `Function ${name} not found.`};
     }
 
-    // Fix: The correct property is `toolResponses`, which expects an array of tool responses.
+    // Fix: The correct property is `toolResponse`, which expects an array of tool responses.
     this.session.sendRealtimeInput({
-      toolResponses: [
+      toolResponse: [
         {
           functionResponse: {
             name,

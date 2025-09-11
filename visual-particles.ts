@@ -116,7 +116,7 @@ export class GdmLiveAudioVisualsParticles extends LitElement {
       0.1,
       1000,
     );
-    this.camera.position.z = 15;
+    this.camera.position.z = 18;
 
     this.renderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
