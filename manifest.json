@@ -1,0 +1,22 @@
+{
+  "short_name": "Live Audio",
+  "name": "Gemini Live Audio",
+  "icons": [
+    {
+      "src": "/icons/icon-192.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icons/icon-512.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#100c14",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#100c14",
+  "description": "Experience real-time voice chat with 3D visuals that react to your conversation."
+}
