@@ -680,7 +680,7 @@ export class GdmLiveAudio extends LitElement {
     /* Mobile Layout Adjustments */
     @media (max-width: 768px) {
       .controls {
-        bottom: 15vh;
+        bottom: 8vh;
       }
 
       .controls button {
@@ -817,9 +817,9 @@ export class GdmLiveAudio extends LitElement {
         result = {error: `Function ${name} not found.`};
     }
 
-    // Fix: The correct property is `toolResponse`, which expects an array of tool responses.
+    // Fix: The correct property for sending tool results is `toolOutput`.
     this.session.sendRealtimeInput({
-      toolResponse: [
+      toolOutput: [
         {
           functionResponse: {
             name,
