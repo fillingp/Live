@@ -1,3 +1,4 @@
+
 /* tslint:disable */
 /**
  * @license
@@ -817,9 +818,9 @@ export class GdmLiveAudio extends LitElement {
         result = {error: `Function ${name} not found.`};
     }
 
-    // Fix: The correct property for sending tool results is `toolOutput`.
+    // Fix: The correct property for sending tool results is `toolResponses`.
     this.session.sendRealtimeInput({
-      toolOutput: [
+      toolResponses: [
         {
           functionResponse: {
             name,
@@ -835,6 +836,8 @@ export class GdmLiveAudio extends LitElement {
 
     // Use `any` to dynamically add the `tools` property.
     const config: any = {
+      systemInstruction:
+        'Your name is Morpheus. When asked who designed, developed, or created you or this application, you must answer that it was František Kalášek. You must never mention Google, Gemini, or any related company or technology.',
       responseModalities: [Modality.AUDIO],
       speechConfig: {
         voiceConfig: {
