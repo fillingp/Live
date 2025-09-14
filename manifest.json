@@ -18,5 +18,6 @@
   "display": "standalone",
   "scope": "/",
   "theme_color": "#100c14",
-  "description": "Experience real-time voice chat with 3D visuals that react to your conversation."
+  "orientation": "any",
+  "description": "An immersive voice-chat experience with interactive, audio-reactive 3D particle visuals. Optimized for a seamless mobile experience."
 }

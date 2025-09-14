@@ -1,4 +1,3 @@
-
 /* tslint:disable */
 /**
  * @license
@@ -58,6 +57,8 @@ export class GdmLiveAudio extends LitElement {
   private scriptProcessorNode: ScriptProcessorNode;
   private sources = new Set<AudioBufferSourceNode>();
   private screenFrameInterval: number | null = null;
+  private touchStartX = 0;
+  private touchDeltaX = 0;
 
   private readonly toolDeclarations = {
     functionDeclarations: [
@@ -156,7 +157,7 @@ export class GdmLiveAudio extends LitElement {
 
     #status {
       position: absolute;
-      bottom: 5vh;
+      bottom: calc(15vh + env(safe-area-inset-bottom));
       left: 0;
       right: 0;
       z-index: 10;
@@ -164,6 +165,8 @@ export class GdmLiveAudio extends LitElement {
       color: white;
       font-family: sans-serif;
       text-shadow: 0 0 4px black;
+      font-size: 14px;
+      padding: 0 10px;
     }
 
     .voice-selector-container {
@@ -254,17 +257,7 @@ export class GdmLiveAudio extends LitElement {
       gap: 10px;
     }
 
-    .reset-container,
-    .screen-share-container,
-    .history-container,
-    .tools-container {
-      position: relative;
-    }
-
-    .reset-container button,
-    .screen-share-container button,
-    .history-container button,
-    .tools-container button {
+    .top-left-controls button {
       outline: none;
       border: 1px solid rgba(255, 255, 255, 0.2);
       color: white;
@@ -279,15 +272,19 @@ export class GdmLiveAudio extends LitElement {
       align-items: center;
       justify-content: center;
       transition: background-color 0.2s ease;
+    }
 
-      &:hover {
-        background: rgba(255, 255, 255, 0.2);
-      }
+    .top-left-controls button:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
 
-      svg {
-        width: 60%;
-        height: 60%;
-      }
+    .top-left-controls button svg {
+      width: 60%;
+      height: 60%;
+    }
+
+    .top-left-controls button[disabled] {
+      display: none;
     }
 
     @keyframes pulse-red {
@@ -326,19 +323,19 @@ export class GdmLiveAudio extends LitElement {
       }
     }
 
-    .tools-container button.active {
+    .tools-button.active {
       background: rgba(80, 120, 255, 0.8);
       border-color: rgba(150, 180, 255, 0.8);
       animation: pulse-blue 2s infinite;
     }
 
-    .screen-share-container button.active.screen {
+    .share-button.active.screen {
       background: rgba(200, 0, 0, 0.8);
       border-color: rgba(255, 100, 100, 0.8);
       animation: pulse-red 2s infinite;
     }
 
-    .screen-share-container button.active.camera {
+    .share-button.active.camera {
       background: rgba(0, 180, 80, 0.8);
       border-color: rgba(100, 255, 150, 0.8);
       animation: pulse-green 2s infinite;
@@ -347,8 +344,9 @@ export class GdmLiveAudio extends LitElement {
     .share-options {
       display: none;
       position: absolute;
-      top: 55px; /* position below the button */
-      left: 0;
+      bottom: 70px;
+      left: 50%;
+      transform: translateX(-50%);
       width: 180px;
       background: rgba(30, 30, 30, 0.9);
       backdrop-filter: blur(5px);
@@ -389,10 +387,6 @@ export class GdmLiveAudio extends LitElement {
     .share-options button svg {
       width: 20px;
       height: 20px;
-    }
-
-    .reset-container button[disabled] {
-      display: none;
     }
 
     #screenShareVideo {
@@ -463,45 +457,97 @@ export class GdmLiveAudio extends LitElement {
     .controls {
       z-index: 10;
       position: absolute;
-      bottom: 10vh;
-      left: 0;
-      right: 0;
+      bottom: calc(90px + env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-direction: column;
+    }
+
+    .record-button {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      padding: 0;
+    }
+    .record-button:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+    .record-button .icon {
+      width: 35px;
+      height: 35px;
+      background-color: #c80000;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+    }
+    .record-button.recording .icon {
+      border-radius: 6px;
+      background-color: #333;
+    }
+    .record-button.recording {
+      animation: pulse-red 2s infinite;
+      border-color: rgba(255, 100, 100, 0.8);
+    }
+
+    /* Bottom Navigation Bar */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 15px;
+      padding-bottom: calc(15px + env(safe-area-inset-bottom));
+      background: rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 20;
       gap: 10px;
+    }
 
-      button {
-        outline: none;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: white;
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.1);
-        width: clamp(35px, 8.4vw, 45px);
-        height: clamp(35px, 8.4vw, 45px);
-        cursor: pointer;
-        font-size: 24px;
-        padding: 0;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background-color 0.2s ease;
+    .bottom-bar .bottom-nav-item button {
+      outline: none;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      width: 55px;
+      height: 55px;
+      cursor: pointer;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s ease;
+    }
 
-        &:hover {
-          background: rgba(255, 255, 255, 0.2);
-        }
+    .bottom-bar .bottom-nav-item button:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    .bottom-bar .bottom-nav-item button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
 
-        svg {
-          width: 60%;
-          height: 60%;
-        }
-      }
+    .bottom-bar .bottom-nav-item button svg {
+      width: 60%;
+      height: 60%;
+    }
 
-      button[disabled] {
-        display: none;
-      }
+    .bottom-nav-item {
+      position: relative;
     }
 
     /* History Panel Styles */
@@ -680,35 +726,44 @@ export class GdmLiveAudio extends LitElement {
 
     /* Mobile Layout Adjustments */
     @media (max-width: 768px) {
-      .controls {
-        bottom: 8vh;
+      .voice-selector-container {
+        top: 10px;
+        right: 10px;
       }
-
-      .controls button {
-        width: 65px;
-        height: 65px;
+      .top-left-controls {
+        top: 10px;
+        left: 10px;
       }
-
-      .screen-share-container {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 11;
+      .top-left-controls button {
+        width: 40px;
+        height: 40px;
       }
-
-      .tools-container {
-        position: fixed;
-        bottom: 75px; /* 20px (bottom) + 45px (height) + 10px (gap) */
-        right: 20px;
-        z-index: 11;
+      .voice-selector {
+        padding: 3px 3px 3px 10px;
+      }
+      .voice-selector select {
+        padding: 8px 0;
+        font-size: 13px;
+        width: 110px;
+      }
+      .voice-selector .preview-button {
+        width: 30px;
+        height: 30px;
       }
 
       .share-options {
-        /* Reposition the dropdown to open upwards from the bottom-right button */
-        top: auto;
-        bottom: 55px; /* 45px button height + 10px gap */
         left: auto;
         right: 0;
+        transform: none;
+      }
+
+      #screenShareVideo.pip {
+        max-width: 150px;
+      }
+
+      #status {
+        bottom: calc(18vh + env(safe-area-inset-bottom));
+        font-size: 12px;
       }
     }
   `;
@@ -717,8 +772,66 @@ export class GdmLiveAudio extends LitElement {
     super();
     this.loadPreferences();
     this.loadChatHistory();
-    this.initClient();
   }
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    // Defer client initialization until the element is connected to the DOM.
+    this.initClient();
+    this.addEventListener('touchstart', this.handleTouchStart);
+    this.addEventListener('touchmove', this.handleTouchMove);
+    this.addEventListener('touchend', this.handleTouchEnd);
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.removeEventListener('touchstart', this.handleTouchStart);
+    this.removeEventListener('touchmove', this.handleTouchMove);
+    this.removeEventListener('touchend', this.handleTouchEnd);
+  }
+
+  private handleTouchStart = (e: TouchEvent) => {
+    if (this.isHistoryOpen) return;
+    this.touchStartX = e.touches[0].clientX;
+    this.touchDeltaX = 0;
+  };
+
+  private handleTouchMove = (e: TouchEvent) => {
+    if (this.isHistoryOpen) return;
+    this.touchDeltaX = e.touches[0].clientX - this.touchStartX;
+  };
+
+  private handleTouchEnd = () => {
+    if (this.isHistoryOpen) return;
+    if (this.touchStartX < 50 && this.touchDeltaX > 100) {
+      this.isHistoryOpen = true;
+    }
+    this.touchStartX = 0;
+    this.touchDeltaX = 0;
+  };
+
+  private handleHistoryTouchStart = (e: TouchEvent) => {
+    if (!this.isHistoryOpen) return;
+    this.touchStartX = e.touches[0].clientX;
+    this.touchDeltaX = 0;
+  };
+
+  private handleHistoryTouchMove = (e: TouchEvent) => {
+    if (!this.isHistoryOpen) return;
+    const currentDelta = e.touches[0].clientX - this.touchStartX;
+    if (currentDelta < 0) {
+      this.touchDeltaX = currentDelta;
+    }
+  };
+
+  private handleHistoryTouchEnd = () => {
+    if (!this.isHistoryOpen) return;
+    if (this.touchDeltaX < -100) {
+      this.isHistoryOpen = false;
+    }
+    this.touchStartX = 0;
+    this.touchDeltaX = 0;
+  };
 
   private loadPreferences() {
     const savedVoice = localStorage.getItem('selectedVoice');
@@ -774,16 +887,24 @@ export class GdmLiveAudio extends LitElement {
   }
 
   private async initClient() {
-    this.initAudio();
+    try {
+      this.updateStatus('Initializing...');
+      this.initAudio();
 
-    // Fix: API key must be from process.env.API_KEY.
-    this.client = new GoogleGenAI({
-      apiKey: process.env.API_KEY,
-    });
+      this.client = new GoogleGenAI({
+        apiKey: process.env.API_KEY,
+      });
 
-    this.outputNode.connect(this.outputAudioContext.destination);
+      this.outputNode.connect(this.outputAudioContext.destination);
 
-    this.initSession();
+      await this.initSession();
+    } catch (e) {
+      console.error('Failed to initialize client:', e);
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      this.updateError(
+        `Initialization failed. Please ensure the API key is configured correctly. Error: ${errorMessage}`,
+      );
+    }
   }
 
   private async handleFunctionCall(functionCall: {name: string; args: any}) {
@@ -818,16 +939,20 @@ export class GdmLiveAudio extends LitElement {
         result = {error: `Function ${name} not found.`};
     }
 
-    // Fix: The correct property for sending tool results is `toolResponses`.
+    // Fix: Send tool results back to the model. The 'toolOutputs' property is invalid.
+    // Tool results are sent in a Content object with role 'tool'.
     this.session.sendRealtimeInput({
-      toolResponses: [
-        {
-          functionResponse: {
-            name,
-            response: result,
+      content: {
+        role: 'tool',
+        parts: [
+          {
+            functionResponse: {
+              name,
+              response: result,
+            },
           },
-        },
-      ],
+        ],
+      },
     });
   }
 
@@ -850,91 +975,87 @@ export class GdmLiveAudio extends LitElement {
       config.tools = [{googleSearch: {}}, this.toolDeclarations];
     }
 
-    try {
-      this.session = await this.client.live.connect({
-        model: model,
-        callbacks: {
-          onopen: () => {
-            this.updateStatus('Opened');
-          },
-          onmessage: async (message: LiveServerMessage) => {
-            const modelTurn = message.serverContent?.modelTurn;
-            // Fix: Grounding metadata is a property of `serverContent`, not `modelTurn` (which is of type `Content`).
-            const groundingMetadata = message.serverContent?.groundingMetadata;
-            const sources = groundingMetadata?.groundingChunks
-              ?.filter((chunk) => chunk.web?.uri)
-              .map((chunk) => ({
-                uri: chunk.web.uri,
-                title: chunk.web.title || chunk.web.uri,
-              }));
-
-            // Handle AI audio response
-            const audio = modelTurn?.parts[0]?.inlineData;
-            if (audio) {
-              this.addMessageToHistory('ai', '[Audio Response]', {sources});
-              this.nextStartTime = Math.max(
-                this.nextStartTime,
-                this.outputAudioContext.currentTime,
-              );
-
-              const audioBuffer = await decodeAudioData(
-                decode(audio.data),
-                this.outputAudioContext,
-                24000,
-                1,
-              );
-              const source = this.outputAudioContext.createBufferSource();
-              source.buffer = audioBuffer;
-              source.connect(this.outputNode);
-              source.addEventListener('ended', () => {
-                this.sources.delete(source);
-              });
-
-              source.start(this.nextStartTime);
-              this.nextStartTime = this.nextStartTime + audioBuffer.duration;
-              this.sources.add(source);
-            }
-
-            // Handle function call
-            const functionCall = modelTurn?.parts[0]?.functionCall;
-            // Fix: Check for `functionCall.name` as it's optional in the type, and cast to satisfy `handleFunctionCall`'s signature.
-            if (functionCall?.name) {
-              this.handleFunctionCall(
-                functionCall as {name: string; args: any},
-              );
-            }
-
-            // Handle interruption
-            const interrupted = message.serverContent?.interrupted;
-            if (interrupted) {
-              for (const source of this.sources.values()) {
-                source.stop();
-                this.sources.delete(source);
-              }
-              this.nextStartTime = 0;
-            }
-
-            // Handle user transcript
-            // Fix: User speech-to-text transcript is in `speechToTextResult`, not `userContent`.
-            // Fix: Access `speechToTextResult` on the top-level `message` object, not within `serverContent`.
-            // Fix: Cast message to any to access speechToTextResult, which may not be in the current type definitions.
-            const userTranscript = (message as any).speechToTextResult?.text;
-            if (userTranscript) {
-              this.addMessageToHistory('user', userTranscript);
-            }
-          },
-          onerror: (e: ErrorEvent) => {
-            this.updateError(e.message);
-          },
-          onclose: (e: CloseEvent) => {
-            this.updateStatus('Close:' + e.reason);
-          },
+    this.session = await this.client.live.connect({
+      model: model,
+      callbacks: {
+        onopen: () => {
+          this.updateStatus('Opened');
         },
-        config,
-      });
-    } catch (e) {
-      console.error(e);
-    }
+        onmessage: async (message: LiveServerMessage) => {
+          const modelTurn = message.serverContent?.modelTurn;
+          // Fix: Grounding metadata is a property of `serverContent`, not `modelTurn` (which is of type `Content`).
+          const groundingMetadata = message.serverContent?.groundingMetadata;
+          const sources = groundingMetadata?.groundingChunks
+            ?.filter((chunk) => chunk.web?.uri)
+            .map((chunk) => ({
+              uri: chunk.web.uri,
+              title: chunk.web.title || chunk.web.uri,
+            }));
+
+          // Handle AI audio response
+          const audio = modelTurn?.parts[0]?.inlineData;
+          if (audio) {
+            this.addMessageToHistory('ai', '[Audio Response]', {sources});
+            this.nextStartTime = Math.max(
+              this.nextStartTime,
+              this.outputAudioContext.currentTime,
+            );
+
+            const audioBuffer = await decodeAudioData(
+              decode(audio.data),
+              this.outputAudioContext,
+              24000,
+              1,
+            );
+            const source = this.outputAudioContext.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(this.outputNode);
+            source.addEventListener('ended', () => {
+              this.sources.delete(source);
+            });
+
+            source.start(this.nextStartTime);
+            this.nextStartTime = this.nextStartTime + audioBuffer.duration;
+            this.sources.add(source);
+          }
+
+          // Handle function call
+          const functionCall = modelTurn?.parts[0]?.functionCall;
+          // Fix: Check for `functionCall.name` as it's optional in the type, and cast to satisfy `handleFunctionCall`'s signature.
+          if (functionCall?.name) {
+            this.handleFunctionCall(
+              functionCall as {name: string; args: any},
+            );
+          }
+
+          // Handle interruption
+          const interrupted = message.serverContent?.interrupted;
+          if (interrupted) {
+            for (const source of this.sources.values()) {
+              source.stop();
+              this.sources.delete(source);
+            }
+            this.nextStartTime = 0;
+          }
+
+          // Handle user transcript
+          // Fix: User speech-to-text transcript is in `speechToTextResult`, not `userContent`.
+          // Fix: Access `speechToTextResult` on the top-level `message` object, not within `serverContent`.
+          // Fix: Cast message to any to access speechToTextResult, which may not be in the current type definitions.
+          const userTranscript = (message as any).speechToTextResult?.text;
+          if (userTranscript) {
+            this.addMessageToHistory('user', userTranscript);
+          }
+        },
+        onerror: (e: ErrorEvent) => {
+          this.updateError(e.message);
+        },
+        onclose: (e: CloseEvent) => {
+          this.updateStatus('Close:' + e.reason);
+        },
+      },
+      config,
+    });
   }
 
   private updateStatus(msg: string) {
@@ -945,12 +1066,21 @@ export class GdmLiveAudio extends LitElement {
     this.error = msg;
   }
 
+  private toggleRecording() {
+    if (this.isRecording) {
+      this.stopRecording();
+    } else {
+      this.startRecording();
+    }
+  }
+
   private async startRecording() {
     if (this.isRecording) {
       return;
     }
 
     this.inputAudioContext.resume();
+    this.outputAudioContext.resume();
 
     this.updateStatus('Requesting microphone access...');
 
@@ -987,7 +1117,7 @@ export class GdmLiveAudio extends LitElement {
       this.scriptProcessorNode.connect(this.inputAudioContext.destination);
 
       this.isRecording = true;
-      this.updateStatus('🔴 Recording... Capturing PCM chunks.');
+      this.updateStatus('🔴 Recording...');
     } catch (err) {
       console.error('Error starting recording:', err);
       this.updateStatus(`Error: ${err.message}`);
@@ -1016,12 +1146,13 @@ export class GdmLiveAudio extends LitElement {
       this.mediaStream = null;
     }
 
-    this.updateStatus('Recording stopped. Click Start to begin again.');
+    this.updateStatus('Recording stopped.');
   }
 
   private async startScreenShare() {
     if (this.sharingMode !== 'none') return;
     this.isShareMenuOpen = false;
+    this.outputAudioContext.resume();
 
     try {
       this.shareStream = await navigator.mediaDevices.getDisplayMedia({
@@ -1051,6 +1182,7 @@ export class GdmLiveAudio extends LitElement {
   private async startCameraShare(facingMode: 'user' | 'environment') {
     if (this.sharingMode !== 'none') return;
     this.isShareMenuOpen = false;
+    this.outputAudioContext.resume();
 
     try {
       this.shareStream = await navigator.mediaDevices.getUserMedia({
@@ -1300,7 +1432,12 @@ export class GdmLiveAudio extends LitElement {
                   class="history-overlay"
                   @click=${this.toggleHistoryPanel}
                 ></div>
-                <div class="history-panel">
+                <div
+                  class="history-panel"
+                  @touchstart=${this.handleHistoryTouchStart}
+                  @touchmove=${this.handleHistoryTouchMove}
+                  @touchend=${this.handleHistoryTouchEnd}
+                >
                   <div class="history-header">
                     <h2>Chat History</h2>
                     <button
@@ -1378,23 +1515,6 @@ export class GdmLiveAudio extends LitElement {
         </div>
 
         <div class="top-left-controls">
-          <div class="history-container">
-            <button
-              id="historyButton"
-              @click=${this.toggleHistoryPanel}
-              aria-label="Toggle Chat History"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="white"
-              >
-                <path
-                  d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.25 2.52.77-1.28-3.52-2.09V8H12z"
-                />
-              </svg>
-            </button>
-          </div>
           <div class="reset-container">
             <button
               id="resetButton"
@@ -1413,14 +1533,25 @@ export class GdmLiveAudio extends LitElement {
               </svg>
             </button>
           </div>
-          <div class="tools-container">
+        </div>
+
+        <div class="controls">
+          <button
+            id="recordButton"
+            class="record-button ${this.isRecording ? 'recording' : ''}"
+            @click=${this.toggleRecording}
+            aria-label=${this.isRecording ? 'Stop Recording' : 'Start Recording'}
+          >
+            <div class="icon"></div>
+          </button>
+        </div>
+
+        <div class="bottom-bar">
+          <div class="bottom-nav-item">
             <button
-              id="toolsButton"
-              @click=${this.toggleTools}
-              class=${this.isToolsEnabled ? 'active' : ''}
-              ?disabled=${this.isRecording}
-              aria-label="Toggle Tools"
-              title="Enable Tools (Search & Functions)"
+              id="historyButton"
+              @click=${this.toggleHistoryPanel}
+              aria-label="Toggle Chat History"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -1428,18 +1559,19 @@ export class GdmLiveAudio extends LitElement {
                 fill="white"
               >
                 <path
-                  d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"
+                  d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.25 2.52.77-1.28-3.52-2.09V8H12z"
                 />
               </svg>
             </button>
           </div>
-          <div class="screen-share-container">
+
+          <div class="bottom-nav-item">
             ${
               this.sharingMode !== 'none'
                 ? html`<button
                     id="stopShareButton"
                     @click=${this.stopSharing}
-                    class="active ${this.sharingMode}"
+                    class="share-button active ${this.sharingMode}"
                     aria-label="Stop Sharing"
                   >
                     <svg
@@ -1452,6 +1584,7 @@ export class GdmLiveAudio extends LitElement {
                   </button>`
                 : html`<button
                     id="shareOptionsButton"
+                    class="share-button"
                     @click=${this.toggleShareOptions}
                     aria-label="Open Share Options"
                   >
@@ -1509,37 +1642,27 @@ export class GdmLiveAudio extends LitElement {
               </button>
             </div>
           </div>
-        </div>
 
-        <div class="controls">
-          <button
-            id="startButton"
-            @click=${this.startRecording}
-            ?disabled=${this.isRecording}
-            aria-label="Start Recording"
-          >
-            <svg
-              viewBox="0 0 100 100"
-              fill="#c80000"
-              xmlns="http://www.w3.org/2000/svg"
+          <div class="bottom-nav-item">
+            <button
+              id="toolsButton"
+              @click=${this.toggleTools}
+              class="tools-button ${this.isToolsEnabled ? 'active' : ''}"
+              ?disabled=${this.isRecording}
+              aria-label="Toggle Tools"
+              title="Enable Tools (Search & Functions)"
             >
-              <circle cx="50" cy="50" r="50" />
-            </svg>
-          </button>
-          <button
-            id="stopButton"
-            @click=${this.stopRecording}
-            ?disabled=${!this.isRecording}
-            aria-label="Stop Recording"
-          >
-            <svg
-              viewBox="0 0 100 100"
-              fill="#000000"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <rect x="0" y="0" width="100" height="100" rx="15" />
-            </svg>
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="white"
+              >
+                <path
+                  d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <video

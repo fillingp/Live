@@ -10,7 +10,6 @@ import {Analyser} from './analyser';
 import * as THREE from 'three';
 
 const SPHERE_RADIUS = 8;
-const PARTICLE_COUNT = 8000;
 
 @customElement('gdm-live-audio-visuals-particles')
 export class GdmLiveAudioVisualsParticles extends LitElement {
@@ -23,6 +22,7 @@ export class GdmLiveAudioVisualsParticles extends LitElement {
   private particlePositions: Float32Array;
   private basePositions: Float32Array;
   private particleVelocities: Float32Array;
+  private particleCount: number;
   private prevTime = 0;
   private interactionPoint = new THREE.Vector3();
   private isInteracting = false;
@@ -109,6 +109,9 @@ export class GdmLiveAudioVisualsParticles extends LitElement {
   };
 
   private init() {
+    const isMobile = window.innerWidth <= 768;
+    this.particleCount = isMobile ? 4000 : 8000;
+
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(
       75,
@@ -133,16 +136,16 @@ export class GdmLiveAudioVisualsParticles extends LitElement {
     this.scene.add(this.interactionSphere);
 
     const geometry = new THREE.BufferGeometry();
-    this.particlePositions = new Float32Array(PARTICLE_COUNT * 3);
-    this.basePositions = new Float32Array(PARTICLE_COUNT * 3);
-    this.particleVelocities = new Float32Array(PARTICLE_COUNT * 3);
-    const colors = new Float32Array(PARTICLE_COUNT * 3);
+    this.particlePositions = new Float32Array(this.particleCount * 3);
+    this.basePositions = new Float32Array(this.particleCount * 3);
+    this.particleVelocities = new Float32Array(this.particleCount * 3);
+    const colors = new Float32Array(this.particleCount * 3);
 
     this.currentRadius = SPHERE_RADIUS;
     this.currentColor = new THREE.Color();
     this.currentColor.setHSL(0.6, 0.7, 0.4); // Default color
 
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
+    for (let i = 0; i < this.particleCount; i++) {
       const i3 = i * 3;
 
       // Create a point on the surface of a sphere
