@@ -68,6 +68,16 @@ export class GdmLiveAudioVisualsParticles extends LitElement {
     canvas:active {
       cursor: grabbing;
     }
+
+    /* Mobile optimizations */
+    @media (max-width: 768px) {
+      canvas {
+        image-rendering: optimizeSpeed;
+        image-rendering: -moz-crisp-edges;
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: optimize-contrast;
+      }
+    }
   `;
 
   disconnectedCallback() {
@@ -109,7 +119,7 @@ export class GdmLiveAudioVisualsParticles extends LitElement {
   };
 
   private init() {
-    const isMobile = window.innerWidth <= 768;
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
     this.particleCount = isMobile ? 4000 : 8000;
 
     this.scene = new THREE.Scene();
@@ -126,7 +136,7 @@ export class GdmLiveAudioVisualsParticles extends LitElement {
       antialias: true,
     });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance
 
     // Invisible sphere for raycasting mouse interactions
     this.interactionSphere = new THREE.Mesh(

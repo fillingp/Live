@@ -37,6 +37,9 @@ export class GdmLiveAudio extends LitElement {
   @state() isHistoryOpen = false;
   @state() isPreviewing = false;
   @state() isToolsEnabled = false;
+  @state() isMobile = false;
+  @state() orientation: 'portrait' | 'landscape' = 'portrait';
+  @state() isFullscreen = false;
 
   @query('.history-messages') private historyMessagesElement: HTMLDivElement;
 
@@ -152,12 +155,14 @@ export class GdmLiveAudio extends LitElement {
       display: block;
       width: 100%;
       height: 100vh;
+      height: 100dvh; /* Dynamic viewport height for mobile */
       overflow: hidden;
+      position: relative;
     }
 
     #status {
       position: absolute;
-      bottom: calc(15vh + env(safe-area-inset-bottom));
+      bottom: calc(12vh + env(safe-area-inset-bottom));
       left: 0;
       right: 0;
       z-index: 10;
@@ -167,12 +172,13 @@ export class GdmLiveAudio extends LitElement {
       text-shadow: 0 0 4px black;
       font-size: 14px;
       padding: 0 10px;
+      pointer-events: none;
     }
 
     .voice-selector-container {
       position: absolute;
-      top: 20px;
-      right: 20px;
+      top: calc(20px + env(safe-area-inset-top));
+      right: calc(20px + env(safe-area-inset-right));
       z-index: 10;
     }
 
@@ -250,8 +256,8 @@ export class GdmLiveAudio extends LitElement {
 
     .top-left-controls {
       position: absolute;
-      top: 20px;
-      left: 20px;
+      top: calc(20px + env(safe-area-inset-top));
+      left: calc(20px + env(safe-area-inset-left));
       z-index: 10;
       display: flex;
       gap: 10px;
@@ -344,7 +350,7 @@ export class GdmLiveAudio extends LitElement {
     .share-options {
       display: none;
       position: absolute;
-      bottom: 70px;
+      bottom: 65px;
       left: 50%;
       transform: translateX(-50%);
       width: 180px;
@@ -355,6 +361,7 @@ export class GdmLiveAudio extends LitElement {
       overflow: hidden;
       flex-direction: column;
       z-index: 20;
+      touch-action: manipulation;
     }
 
     .share-options.open {
@@ -428,8 +435,8 @@ export class GdmLiveAudio extends LitElement {
     #screenShareVideo.pip {
       top: auto;
       left: auto;
-      bottom: 20px;
-      right: 20px;
+      bottom: calc(20px + env(safe-area-inset-bottom));
+      right: calc(20px + env(safe-area-inset-right));
       width: 25vw;
       max-width: 320px;
       height: auto;
@@ -457,7 +464,7 @@ export class GdmLiveAudio extends LitElement {
     .controls {
       z-index: 10;
       position: absolute;
-      bottom: calc(90px + env(safe-area-inset-bottom));
+      bottom: calc(100px + env(safe-area-inset-bottom));
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -466,8 +473,8 @@ export class GdmLiveAudio extends LitElement {
     }
 
     .record-button {
-      width: 70px;
-      height: 70px;
+      width: 80px;
+      height: 80px;
       border-radius: 50%;
       background-color: rgba(255, 255, 255, 0.1);
       border: 2px solid rgba(255, 255, 255, 0.3);
@@ -478,13 +485,18 @@ export class GdmLiveAudio extends LitElement {
       cursor: pointer;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
       padding: 0;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     .record-button:hover {
       background-color: rgba(255, 255, 255, 0.2);
     }
+    .record-button:active {
+      transform: scale(0.95);
+    }
     .record-button .icon {
-      width: 35px;
-      height: 35px;
+      width: 40px;
+      height: 40px;
       background-color: #c80000;
       border-radius: 50%;
       transition: all 0.2s ease;
@@ -507,13 +519,16 @@ export class GdmLiveAudio extends LitElement {
       display: flex;
       justify-content: space-around;
       align-items: center;
-      padding: 15px;
-      padding-bottom: calc(15px + env(safe-area-inset-bottom));
+      padding: 12px;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom));
+      padding-left: calc(12px + env(safe-area-inset-left));
+      padding-right: calc(12px + env(safe-area-inset-right));
       background: rgba(0, 0, 0, 0.2);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       z-index: 20;
       gap: 10px;
+      min-height: 70px;
     }
 
     .bottom-bar .bottom-nav-item button {
@@ -522,8 +537,8 @@ export class GdmLiveAudio extends LitElement {
       color: white;
       border-radius: 12px;
       background: rgba(255, 255, 255, 0.1);
-      width: 55px;
-      height: 55px;
+      width: 50px;
+      height: 50px;
       cursor: pointer;
       padding: 0;
       margin: 0;
@@ -531,10 +546,16 @@ export class GdmLiveAudio extends LitElement {
       align-items: center;
       justify-content: center;
       transition: background-color 0.2s ease;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .bottom-bar .bottom-nav-item button:hover:not(:disabled) {
       background: rgba(255, 255, 255, 0.2);
+    }
+
+    .bottom-bar .bottom-nav-item button:active:not(:disabled) {
+      transform: scale(0.95);
     }
     .bottom-bar .bottom-nav-item button:disabled {
       opacity: 0.5;
@@ -557,6 +578,7 @@ export class GdmLiveAudio extends LitElement {
       background-color: rgba(0, 0, 0, 0.5);
       z-index: 100;
       animation: fadeIn 0.3s ease;
+      touch-action: none;
     }
 
     .history-panel {
@@ -564,8 +586,7 @@ export class GdmLiveAudio extends LitElement {
       top: 0;
       left: 0;
       height: 100%;
-      width: 350px;
-      max-width: 90vw;
+      width: min(350px, 85vw);
       background: rgba(30, 30, 30, 0.9);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
@@ -576,6 +597,8 @@ export class GdmLiveAudio extends LitElement {
       transform: translateX(-100%);
       animation: slideIn 0.3s ease forwards;
       box-shadow: 5px 0 25px rgba(0, 0, 0, 0.3);
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
     }
 
     @keyframes slideIn {
@@ -632,6 +655,7 @@ export class GdmLiveAudio extends LitElement {
     .history-messages {
       flex-grow: 1;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       padding: 20px;
       display: flex;
       flex-direction: column;
@@ -772,6 +796,8 @@ export class GdmLiveAudio extends LitElement {
     super();
     this.loadPreferences();
     this.loadChatHistory();
+    this.detectMobile();
+    this.detectOrientation();
   }
 
   connectedCallback(): void {
@@ -781,6 +807,9 @@ export class GdmLiveAudio extends LitElement {
     this.addEventListener('touchstart', this.handleTouchStart);
     this.addEventListener('touchmove', this.handleTouchMove);
     this.addEventListener('touchend', this.handleTouchEnd);
+    window.addEventListener('orientationchange', this.handleOrientationChange);
+    window.addEventListener('resize', this.handleResize);
+    this.preventZoom();
   }
 
   disconnectedCallback(): void {
@@ -788,6 +817,8 @@ export class GdmLiveAudio extends LitElement {
     this.removeEventListener('touchstart', this.handleTouchStart);
     this.removeEventListener('touchmove', this.handleTouchMove);
     this.removeEventListener('touchend', this.handleTouchEnd);
+    window.removeEventListener('orientationchange', this.handleOrientationChange);
+    window.removeEventListener('resize', this.handleResize);
   }
 
   private handleTouchStart = (e: TouchEvent) => {
@@ -809,6 +840,63 @@ export class GdmLiveAudio extends LitElement {
     this.touchStartX = 0;
     this.touchDeltaX = 0;
   };
+
+  private detectMobile() {
+    this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+  }
+
+  private detectOrientation() {
+    this.orientation = window.innerHeight > window.innerWidth ? 'portrait' : 'landscape';
+  }
+
+  private handleOrientationChange = () => {
+    setTimeout(() => {
+      this.detectOrientation();
+      this.requestUpdate();
+    }, 100);
+  };
+
+  private handleResize = () => {
+    this.detectMobile();
+    this.detectOrientation();
+  };
+
+  private preventZoom() {
+    // Prevent zoom on double tap
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', (event) => {
+      const now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+
+    // Prevent pinch zoom
+    document.addEventListener('touchmove', (event) => {
+      if (event.touches.length > 1) {
+        event.preventDefault();
+      }
+    }, { passive: false });
+  }
+
+  private toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().then(() => {
+        this.isFullscreen = true;
+      }).catch(() => {
+        // Fallback for iOS Safari
+        if ((document.documentElement as any).webkitRequestFullscreen) {
+          (document.documentElement as any).webkitRequestFullscreen();
+          this.isFullscreen = true;
+        }
+      });
+    } else {
+      document.exitFullscreen().then(() => {
+        this.isFullscreen = false;
+      });
+    }
+  }
 
   private handleHistoryTouchStart = (e: TouchEvent) => {
     if (!this.isHistoryOpen) return;
@@ -1663,6 +1751,29 @@ export class GdmLiveAudio extends LitElement {
               </svg>
             </button>
           </div>
+
+          ${this.isMobile ? html`
+            <div class="bottom-nav-item">
+              <button
+                id="fullscreenButton"
+                @click=${this.toggleFullscreen}
+                aria-label="Toggle Fullscreen"
+                title="Toggle Fullscreen"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="white"
+                >
+                  ${this.isFullscreen ? html`
+                    <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>
+                  ` : html`
+                    <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+                  `}
+                </svg>
+              </button>
+            </div>
+          ` : ''}
         </div>
 
         <video

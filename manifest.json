@@ -18,6 +18,6 @@
   "display": "standalone",
   "scope": "/",
   "theme_color": "#100c14",
-  "orientation": "any",
+  "orientation": "portrait-primary",
   "description": "An immersive voice-chat experience with interactive, audio-reactive 3D particle visuals. Optimized for a seamless mobile experience."
 }
