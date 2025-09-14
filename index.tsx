@@ -152,7 +152,25 @@ export class GdmLiveAudio extends LitElement {
       display: block;
       width: 100%;
       height: 100vh;
-      overflow: hidden;
+    }
+
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      z-index: 10;
+    }
+
+    .main-content {
+      flex-grow: 1;
+      position: relative;
     }
 
     #status {
@@ -167,13 +185,6 @@ export class GdmLiveAudio extends LitElement {
       text-shadow: 0 0 4px black;
       font-size: 14px;
       padding: 0 10px;
-    }
-
-    .voice-selector-container {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      z-index: 10;
     }
 
     .voice-selector {
@@ -249,10 +260,6 @@ export class GdmLiveAudio extends LitElement {
     }
 
     .top-left-controls {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      z-index: 10;
       display: flex;
       gap: 10px;
     }
@@ -456,13 +463,11 @@ export class GdmLiveAudio extends LitElement {
 
     .controls {
       z-index: 10;
-      position: absolute;
-      bottom: calc(90px + env(safe-area-inset-bottom));
-      left: 50%;
-      transform: translateX(-50%);
       display: flex;
       align-items: center;
       justify-content: center;
+      margin-top: auto;
+      padding-bottom: 20px;
     }
 
     .record-button {
@@ -500,10 +505,6 @@ export class GdmLiveAudio extends LitElement {
 
     /* Bottom Navigation Bar */
     .bottom-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
       display: flex;
       justify-content: space-around;
       align-items: center;
@@ -726,13 +727,8 @@ export class GdmLiveAudio extends LitElement {
 
     /* Mobile Layout Adjustments */
     @media (max-width: 768px) {
-      .voice-selector-container {
-        top: 10px;
-        right: 10px;
-      }
-      .top-left-controls {
-        top: 10px;
-        left: 10px;
+      .top-bar {
+        padding: 10px;
       }
       .top-left-controls button {
         width: 40px;
@@ -762,8 +758,33 @@ export class GdmLiveAudio extends LitElement {
       }
 
       #status {
-        bottom: calc(18vh + env(safe-area-inset-bottom));
+        bottom: auto;
+        top: 10px;
         font-size: 12px;
+      }
+
+      .controls {
+        padding-bottom: 10px;
+      }
+
+      .record-button {
+        width: 60px;
+        height: 60px;
+      }
+
+      .record-button .icon {
+        width: 30px;
+        height: 30px;
+      }
+
+      .bottom-bar {
+        padding: 10px;
+        gap: 5px;
+      }
+
+      .bottom-bar .bottom-nav-item button {
+        width: 50px;
+        height: 50px;
       }
     }
   `;
@@ -1424,7 +1445,7 @@ export class GdmLiveAudio extends LitElement {
 
   render() {
     return html`
-      <div>
+      <div class="app-container">
         ${
           this.isHistoryOpen
             ? html`
@@ -1480,70 +1501,90 @@ export class GdmLiveAudio extends LitElement {
               `
             : ''
         }
-
-        <div class="voice-selector-container">
-          <div class="voice-selector">
-            <select
-              id="voice-select"
-              .value=${this.selectedVoice}
-              @change=${this.handleVoiceChange}
-              ?disabled=${this.isRecording}
-              aria-label="Select AI Voice"
-            >
-              <option value="Puck">Puck - Calm Male</option>
-              <option value="Zephyr">Zephyr - Calm Female</option>
-              <option value="Charon">Charon - Deep Male</option>
-              <option value="Kore">Kore - Clear Female</option>
-              <option value="Fenrir">Fenrir - Warm Male</option>
-            </select>
-            <button
-              class="preview-button"
-              @click=${this.playVoicePreview}
-              ?disabled=${this.isRecording || this.isPreviewing}
-              aria-label="Preview selected voice"
-              title="Preview selected voice"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
+        <div class="top-bar">
+          <div class="top-left-controls">
+            <div class="reset-container">
+              <button
+                id="resetButton"
+                @click=${this.reset}
+                ?disabled=${this.isRecording}
+                aria-label="Reset Session"
               >
-                <path d="M8 5v14l11-7L8 5z" />
-              </svg>
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 -960 960 960"
+                  fill="#ffffff"
+                >
+                  <path
+                    d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="voice-selector-container">
+            <div class="voice-selector">
+              <select
+                id="voice-select"
+                .value=${this.selectedVoice}
+                @change=${this.handleVoiceChange}
+                ?disabled=${this.isRecording}
+                aria-label="Select AI Voice"
+              >
+                <option value="Puck">Puck - Calm Male</option>
+                <option value="Zephyr">Zephyr - Calm Female</option>
+                <option value="Charon">Charon - Deep Male</option>
+                <option value="Kore">Kore - Clear Female</option>
+                <option value="Fenrir">Fenrir - Warm Male</option>
+              </select>
+              <button
+                class="preview-button"
+                @click=${this.playVoicePreview}
+                ?disabled=${this.isRecording || this.isPreviewing}
+                aria-label="Preview selected voice"
+                title="Preview selected voice"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M8 5v14l11-7L8 5z" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
-
-        <div class="top-left-controls">
-          <div class="reset-container">
+        <div class="main-content">
+          <div class="controls">
             <button
-              id="resetButton"
-              @click=${this.reset}
-              ?disabled=${this.isRecording}
-              aria-label="Reset Session"
+              id="recordButton"
+              class="record-button ${this.isRecording ? 'recording' : ''}"
+              @click=${this.toggleRecording}
+              aria-label=${
+                this.isRecording ? 'Stop Recording' : 'Start Recording'
+              }
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 -960 960 960"
-                fill="#ffffff"
-              >
-                <path
-                  d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z"
-                />
-              </svg>
+              <div class="icon"></div>
             </button>
           </div>
-        </div>
 
-        <div class="controls">
-          <button
-            id="recordButton"
-            class="record-button ${this.isRecording ? 'recording' : ''}"
-            @click=${this.toggleRecording}
-            aria-label=${this.isRecording ? 'Stop Recording' : 'Start Recording'}
-          >
-            <div class="icon"></div>
-          </button>
+          <video
+            id="screenShareVideo"
+            class=${`${this.sharingMode !== 'none' ? 'active' : ''} ${
+              this.sharingMode === 'camera' ? 'pip' : ''
+            }`}
+            autoplay
+            muted
+            playsinline
+          ></video>
+
+          <div id="status">${this.error || this.status}</div>
+          <gdm-live-audio-visuals-particles
+            class=${this.sharingMode === 'screen' ? 'hidden' : ''}
+            .inputNode=${this.inputNode}
+            .outputNode=${this.outputNode}
+          ></gdm-live-audio-visuals-particles>
         </div>
 
         <div class="bottom-bar">
@@ -1664,23 +1705,6 @@ export class GdmLiveAudio extends LitElement {
             </button>
           </div>
         </div>
-
-        <video
-          id="screenShareVideo"
-          class=${`${this.sharingMode !== 'none' ? 'active' : ''} ${
-            this.sharingMode === 'camera' ? 'pip' : ''
-          }`}
-          autoplay
-          muted
-          playsinline
-        ></video>
-
-        <div id="status">${this.error || this.status}</div>
-        <gdm-live-audio-visuals-particles
-          class=${this.sharingMode === 'screen' ? 'hidden' : ''}
-          .inputNode=${this.inputNode}
-          .outputNode=${this.outputNode}
-        ></gdm-live-audio-visuals-particles>
       </div>
     `;
   }
